@@ -1,0 +1,75 @@
+name: Windows smoke test
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "runtime/**"
+      - "setup.bat"
+      - "launch.bat"
+      - "stop.bat"
+      - ".github/workflows/windows-smoke.yml"
+
+jobs:
+  smoke:
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Environment
+        shell: pwsh
+        run: |
+          $PSVersionTable.PSVersion.ToString()
+          (Get-Command curl.exe).Source
+
+      - name: Install and start with setup.bat
+        shell: cmd
+        run: echo. | setup.bat --NoLaunch
+
+      - name: Launch again (idempotent)
+        shell: cmd
+        run: launch.bat --NoBrowser
+
+      - name: Verify game endpoints
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $play = (curl.exe -sk -o NUL -w "%{http_code}" https://127.0.0.1:8443/play).Trim()
+          $client = (curl.exe -sk -o NUL -w "%{http_code}" https://127.0.0.1:8443/client/NinjaSage.swf).Trim()
+          $admin = (curl.exe -sk -o NUL -w "%{http_code}" https://127.0.0.1:8443/admin).Trim()
+          Write-Host "play=$play client=$client admin=$admin"
+          if ($play -ne "200") { throw "GET /play returned $play" }
+          if ($client -ne "200") { throw "GET /client/NinjaSage.swf returned $client" }
+          if ($admin -notin @("200", "302")) { throw "GET /admin returned $admin" }
+
+      - name: Verify database
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = "Stop"
+          $db = "runtime\bin\mariadb\bin\mariadb.exe"
+          $counts = & $db --host=127.0.0.1 --port=3307 --user=root --database=ninjasage `
+            --skip-column-names --batch `
+            --execute="SELECT (SELECT COUNT(*) FROM items), (SELECT COUNT(*) FROM skills), (SELECT COUNT(*) FROM enemies), (SELECT COUNT(*) FROM users);"
+          Write-Host "counts=$counts"
+          $parts = ($counts -split "\s+")
+          if ([int]$parts[0] -lt 5000) { throw "Items table is incomplete" }
+          if ([int]$parts[1] -lt 1000) { throw "Skills table is incomplete" }
+          if ([int]$parts[2] -lt 300) { throw "Enemies table is incomplete" }
+          if ([int]$parts[3] -lt 2) { throw "Demo/admin users are missing" }
+
+      - name: Upload logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-logs
+          path: runtime/logs/
+          if-no-files-found: ignore
+
+      - name: Stop services
+        if: always()
+        shell: cmd
+        run: echo. | stop.bat
