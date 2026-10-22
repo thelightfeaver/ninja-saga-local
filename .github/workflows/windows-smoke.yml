@@ -26,13 +26,43 @@ jobs:
           $PSVersionTable.PSVersion.ToString()
           (Get-Command curl.exe).Source
 
+      - name: Port diagnostics
+        shell: pwsh
+        run: |
+          netstat -ano | Select-String ":8000|:8080|:8765|:3307|:8443"
+          netsh interface ipv4 show excludedportrange protocol=tcp
+          foreach ($port in 8000, 8080, 8765) {
+            $listener = [System.Net.Sockets.TcpListener]::new([System.Net.IPAddress]::Loopback, $port)
+            try {
+              $listener.Start()
+              Write-Host "bind $port OK"
+            } catch {
+              Write-Host "bind $port FAIL: $($_.Exception.Message)"
+            } finally {
+              try { $listener.Stop() } catch {}
+            }
+          }
+
       - name: Install and start with setup.bat
         shell: cmd
         run: echo. | setup.bat --NoLaunch
 
+      - name: Diagnose after setup
+        shell: pwsh
+        run: |
+          Get-Process php, mariadbd, node -ErrorAction SilentlyContinue |
+            Format-Table Id, ProcessName, StartTime
+          netstat -ano | Select-String ":8000|:3307|:8443"
+
       - name: Launch again (idempotent)
         shell: cmd
-        run: launch.bat --NoBrowser
+        run: |
+          launch.bat --NoBrowser
+          if errorlevel 1 (
+            type runtime\logs\laravel-console.log
+            type runtime\logs\laravel-console.err.log
+            exit /b 1
+          )
 
       - name: Verify game endpoints
         shell: pwsh
