@@ -1,0 +1,96 @@
+# ---------------------------------------------------------------------------
+# Ninja Saga local server · repository ignore list
+# ---------------------------------------------------------------------------
+.DS_Store
+Thumbs.db
+Desktop.ini
+*~
+__pycache__/
+*.pyc
+
+# Local secrets and generated TLS material
+runtime/tls/*.pem
+.env
+**/.env
+**/.env.backup
+**/.env.production
+ns-server/Database/Laragon/ninjasage/auth.json
+
+# Runtime state (never commit saves, logs, PIDs or browser profiles)
+runtime/mysql/
+runtime/mysql.sock
+runtime/mysql.pid
+runtime/mysql.err
+runtime/mysql.legacy-*
+runtime/chrome-profile/
+runtime/logs/
+runtime/pids/
+runtime/downloads/
+runtime/bin/
+runtime/.setup-complete
+
+# Original GitHub dump (kept locally, not part of the playable package)
+repo/
+
+# Nested upstream checkout metadata
+ns-server/.git/
+
+# Heavy build tools that players do not need
+tools/ffdec/
+tools/ffdec.zip
+tools/ruffle-web.zip
+tools/nsps/
+tools/__pycache__/
+
+# Client files that are not needed at runtime
+ns-server/Custom Client/NS Custom Client V1/Backup/
+ns-server/Custom Client/NS Custom Client V1/Adobe AIR/
+ns-server/Custom Client/NS Custom Client V1/META-INF/
+ns-server/Custom Client/NS Custom Client V1/AppIconsForPublish/
+ns-server/Custom Client/NS Custom Client V1/NSCUSTOM.exe
+
+# Laravel duplicates of the client asset folders (we keep the originals in
+# "Custom Client/NS Custom Client V1" and link them into public/ at launch)
+ns-server/Database/Laragon/ninjasage/Items/
+ns-server/Database/Laragon/ninjasage/Skills/
+
+# Generated / deployed into public/ by the launcher
+ns-server/Database/Laragon/ninjasage/public/client/
+ns-server/Database/Laragon/ninjasage/public/tools/
+ns-server/Database/Laragon/ninjasage/public/arcade/
+ns-server/Database/Laragon/ninjasage/public/tmp/
+ns-server/Database/Laragon/ninjasage/public/test/
+ns-server/Database/Laragon/ninjasage/public/play.html
+ns-server/Database/Laragon/ninjasage/public/items
+ns-server/Database/Laragon/ninjasage/public/pets
+ns-server/Database/Laragon/ninjasage/public/materials
+ns-server/Database/Laragon/ninjasage/public/npcs
+ns-server/Database/Laragon/ninjasage/public/enemy
+ns-server/Database/Laragon/ninjasage/public/swfpanels
+ns-server/Database/Laragon/ninjasage/public/mission
+ns-server/Database/Laragon/ninjasage/public/essentials
+ns-server/Database/Laragon/ninjasage/public/consumables
+ns-server/Database/Laragon/ninjasage/public/sounds
+ns-server/Database/Laragon/ninjasage/public/fonts/*.ttf
+ns-server/Database/Laragon/ninjasage/public/game_data/Backup/
+ns-server/Database/Laragon/ninjasage/public/storage
+ns-server/Database/Laragon/ninjasage/storage/app/private/game_data
+
+# Laravel runtime caches (keep the .gitignore files so the folders exist after a clone)
+ns-server/Database/Laragon/ninjasage/storage/logs/*
+!ns-server/Database/Laragon/ninjasage/storage/logs/.gitignore
+ns-server/Database/Laragon/ninjasage/storage/framework/cache/data/*
+!ns-server/Database/Laragon/ninjasage/storage/framework/cache/data/.gitignore
+ns-server/Database/Laragon/ninjasage/storage/framework/sessions/*
+!ns-server/Database/Laragon/ninjasage/storage/framework/sessions/.gitignore
+ns-server/Database/Laragon/ninjasage/storage/framework/views/*
+!ns-server/Database/Laragon/ninjasage/storage/framework/views/.gitignore
+ns-server/Database/Laragon/ninjasage/bootstrap/cache/*.php
+
+# Upstream local TLS key: public cert is harmless, private key must stay out
+ns-server/Database/Laragon/ninjasage/*-key.pem
+ns-server/Database/Laragon/ninjasage/node_modules/
+ns-server/Database/Laragon/ninjasage/chat-server/node_modules/
+ns-server/Database/Laragon/ninjasage/pvp-server/node_modules/
+ns-server/Database/Laragon/ninjasage/public/hot
+ns-server/Database/Laragon/ninjasage/public/build

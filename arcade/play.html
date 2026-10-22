@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ninja Saga · Servidor Local</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="color-scheme" content="dark">
+<style>
+  :root {
+    --gold: #f0c05a;
+    --gold-2: #d98b2b;
+    --ink: #08090d;
+    --panel: rgba(10, 12, 18, .82);
+    --line: rgba(240, 192, 90, .32);
+    --text: #f2f4f8;
+    --muted: #a8b2c4;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; background: var(--ink); color: var(--text); overflow: hidden; }
+  body {
+    font-family: "Avenir Next", "Helvetica Neue", Helvetica, Arial, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  #stage { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; background: #000; }
+  #stage ruffle-player { width: 100%; height: 100%; }
+
+  /* ---------- cover ---------- */
+  #cover {
+    position: fixed; inset: 0; z-index: 20;
+    display: flex; align-items: center; justify-content: center;
+    background:
+      linear-gradient(180deg, rgba(5, 6, 10, .55), rgba(5, 6, 10, .9)),
+      url("/arcade/bg.jpg") center / cover no-repeat;
+    transition: opacity .45s ease, visibility .45s ease;
+  }
+  #cover::after {
+    content: ""; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 50% 40%, transparent 0 20%, rgba(0,0,0,.55) 75%);
+    pointer-events: none;
+  }
+  #cover.hidden { opacity: 0; visibility: hidden; }
+  .panel {
+    position: relative; z-index: 1; width: min(680px, 90vw);
+    padding: 38px 40px 30px; text-align: center;
+    background: var(--panel); border: 1px solid var(--line); border-radius: 18px;
+    box-shadow: 0 30px 90px rgba(0,0,0,.65), inset 0 1px 0 rgba(255,255,255,.06);
+    backdrop-filter: blur(10px);
+  }
+  .kicker {
+    font: 600 11px/1 ui-monospace, Menlo, monospace; letter-spacing: .22em;
+    color: var(--gold); text-transform: uppercase; margin-bottom: 16px;
+  }
+  h1 {
+    margin: 0; font-size: clamp(44px, 7vw, 76px); line-height: .95; letter-spacing: .02em;
+    font-weight: 800; text-transform: uppercase;
+    background: linear-gradient(180deg, #fff4cf 0%, #f0c05a 45%, #c97a1e 100%);
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+    filter: drop-shadow(0 4px 18px rgba(240,192,90,.25));
+  }
+  h1 small { display: block; font-size: .32em; letter-spacing: .38em; color: #d8deea; -webkit-text-fill-color: #d8deea; margin-top: 10px; font-weight: 600; }
+  .sub { margin: 18px 0 24px; color: var(--muted); font-size: 15px; line-height: 1.6; }
+  .sub b { color: #e9eef8; font-weight: 600; }
+  #playBtn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 12px;
+    min-width: 260px; padding: 16px 34px; cursor: pointer;
+    font: 800 17px/1 "Avenir Next", Helvetica, sans-serif; letter-spacing: .12em; text-transform: uppercase;
+    color: #24170a; background: linear-gradient(180deg, #ffe6a1, #f0c05a 48%, #d98b2b);
+    border: 1px solid #ffe4a0; border-radius: 12px;
+    box-shadow: 0 8px 0 #8a5312, 0 16px 34px rgba(240,192,90,.25);
+    transition: transform .08s ease, box-shadow .08s ease, filter .15s ease;
+  }
+  #playBtn:hover { filter: brightness(1.06); }
+  #playBtn:active { transform: translateY(5px); box-shadow: 0 3px 0 #8a5312, 0 8px 20px rgba(240,192,90,.2); }
+  #playBtn:disabled { filter: grayscale(.5); cursor: wait; }
+  .hint { margin: 22px 0 0; color: #8f9aab; font-size: 12.5px; line-height: 1.6; }
+  .hint b { color: #d9e0ec; font-weight: 600; }
+  .hint code { color: var(--gold); font-family: ui-monospace, Menlo, monospace; font-size: 12px; }
+  .chips { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 20px; }
+  .chip { font: 500 10.5px/1 ui-monospace, Menlo, monospace; letter-spacing: .08em; color: #9fabbd;
+          border: 1px solid rgba(255,255,255,.12); border-radius: 999px; padding: 7px 11px; }
+  .legal { margin-top: 18px; color: #646e7e; font-size: 10.5px; line-height: 1.5; }
+
+  /* ---------- loading ---------- */
+  #loading {
+    position: fixed; inset: 0; z-index: 15; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 18px; background: #06070b;
+    transition: opacity .4s ease, visibility .4s ease;
+  }
+  #loading.hidden { opacity: 0; visibility: hidden; }
+  .spinner {
+    width: 54px; height: 54px; border-radius: 50%;
+    border: 3px solid rgba(240,192,90,.18); border-top-color: var(--gold);
+    animation: spin 1s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  #loading .t { font: 700 14px/1.4 ui-monospace, Menlo, monospace; letter-spacing: .2em; color: var(--gold); text-transform: uppercase; }
+  #loading .s { font-size: 12px; color: #7d8798; }
+  #error {
+    position: fixed; inset: 0; z-index: 30; display: none; align-items: center; justify-content: center;
+    background: rgba(3,4,7,.94); padding: 24px;
+  }
+  #error.show { display: flex; }
+  #error .box { max-width: 620px; padding: 28px; border: 1px solid #5b2f2f; border-radius: 14px; background: #120d0d; }
+  #error h2 { margin: 0 0 10px; color: #ffb4a8; font-size: 20px; }
+  #error p { color: #d9d2cf; font-size: 13.5px; line-height: 1.6; }
+  #error code { color: #ffd27a; word-break: break-all; font-size: 12px; }
+
+  /* ---------- in-game chrome ---------- */
+  #chrome { position: fixed; top: 10px; right: 10px; z-index: 12; display: flex; gap: 6px; opacity: .22; transition: opacity .2s ease; }
+  #chrome:hover { opacity: .95; }
+  #chrome button {
+    width: 34px; height: 34px; border-radius: 9px; cursor: pointer;
+    color: #e8edf5; background: rgba(8,10,15,.72); border: 1px solid rgba(255,255,255,.16);
+    font-size: 16px; line-height: 1; display: grid; place-items: center;
+  }
+  #chrome button:hover { border-color: var(--gold); color: var(--gold); }
+  #toast {
+    position: fixed; left: 50%; bottom: 26px; transform: translateX(-50%) translateY(16px);
+    z-index: 13; padding: 10px 16px; border-radius: 999px; font-size: 12px; color: #e9eef8;
+    background: rgba(8,10,15,.86); border: 1px solid rgba(255,255,255,.14);
+    opacity: 0; visibility: hidden; transition: all .25s ease; pointer-events: none;
+  }
+  #toast.show { opacity: 1; visibility: visible; transform: translateX(-50%) translateY(0); }
+</style>
+</head>
+<body>
+<div id="stage"></div>
+
+<div id="cover">
+  <div class="panel">
+    <div class="kicker">Archivo local · Flash · 2009 – 2021</div>
+    <h1>Ninja Saga<small>Servidor privado local</small></h1>
+    <p class="sub">
+      El cliente original de Ninja Saga corriendo en <b>Ruffle</b>, contra un
+      servidor <b>Laravel + MySQL</b> local. Sin Facebook, sin internet y sin servidores muertos.
+    </p>
+    <button id="playBtn">▶ &nbsp;Jugar</button>
+    <p class="hint">
+      Cuenta de prueba: <b>macninja</b> / <b>ninja1234</b><br>
+      También puedes crear una cuenta nueva con el botón <b>Register</b> del juego.
+      <br>Primera vez: <b>setup.bat</b> (Windows) o <b>launch.command</b> (macOS).
+    </p>
+    <div class="chips">
+      <span class="chip">1920×1080</span>
+      <span class="chip">40 FPS</span>
+      <span class="chip">OFFLINE</span>
+      <span class="chip">ES / EN</span>
+    </div>
+    <p class="legal">
+      Proyecto de preservación local. Ninja Saga y sus contenidos pertenecen a sus autores originales.
+      No se distribuye como producto oficial.
+    </p>
+  </div>
+</div>
+
+<div id="loading" class="hidden">
+  <div class="spinner"></div>
+  <div class="t">Cargando Ninja Saga</div>
+  <div class="s" id="loadStatus">Preparando el reproductor Flash…</div>
+</div>
+
+<div id="error">
+  <div class="box">
+    <h2>No se pudo iniciar el juego</h2>
+    <p id="errorText">Comprueba que el servidor local está levantado.</p>
+    <p><code id="errorDetail"></code></p>
+    <p style="color:#8d97a8;font-size:12px;margin-bottom:0">Vuelve a ejecutar <b>launch.bat</b> (Windows) o <b>launch.command</b> (macOS) y recarga esta página.</p>
+  </div>
+</div>
+
+<div id="chrome">
+  <button id="fsBtn" title="Pantalla completa (F11)">⛶</button>
+  <button id="reloadBtn" title="Reiniciar el juego">↻</button>
+</div>
+<div id="toast"></div>
+
+<script src="/tools/ruffle-web/ruffle.js"></script>
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const renderer = params.get("renderer"); // e.g. ?renderer=canvas
+  const stage = document.getElementById("stage");
+  const cover = document.getElementById("cover");
+  const playBtn = document.getElementById("playBtn");
+  const loading = document.getElementById("loading");
+  const loadStatus = document.getElementById("loadStatus");
+  const errorBox = document.getElementById("error");
+  const errorText = document.getElementById("errorText");
+  const errorDetail = document.getElementById("errorDetail");
+  const toastEl = document.getElementById("toast");
+  let player = null;
+  let loaded = false;
+
+  const toast = (msg) => {
+    toastEl.textContent = msg;
+    toastEl.classList.add("show");
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => toastEl.classList.remove("show"), 2200);
+  };
+
+  window.RufflePlayer = window.RufflePlayer || {};
+  window.RufflePlayer.config = {
+    autoplay: "on",
+    unmuteOverlay: "hidden",
+    splashScreen: false,
+    letterbox: "on",
+    scale: "showAll",
+    quality: "high",
+    warnOnUnsupportedContent: false,
+    logLevel: "warn",
+    contextMenu: "on",
+    allowScriptAccess: true,
+    salign: "tl",
+    base: null,
+    openUrlMode: "allow",
+    favorFlash: true,
+    preferredRenderer: renderer || null,
+    playerRuntime: "flashPlayer",
+    fontSources: [
+      "/fonts/Arial.ttf",
+      "/fonts/Arial-Bold.ttf",
+      "/fonts/ArialUnicode.ttf",
+      "/fonts/Verdana-Regular.ttf",
+      "/fonts/Verdana-Bold.ttf",
+      "/fonts/VerdanaBold-Regular.ttf",
+      "/fonts/FranklinGothicDemi.ttf",
+      "/fonts/NotoSans-Regular.ttf",
+      "/fonts/NotoSans-Bold.ttf"
+    ],
+    defaultFonts: { sans: ["Arial", "Arial Unicode MS", "Verdana"], serif: ["Arial", "Arial Unicode MS"], typewriter: ["Arial"], japaneseGothic: ["Arial Unicode MS", "Arial"] }
+  };
+
+  // Ruffle shows a hardware-acceleration warning as a modal.  It can block
+  // clicks when Chrome is using software rendering, so tuck it away.
+  function suppressRuffleWarnings() {
+    if (!player) return;
+    const root = player.shadowRoot;
+    if (!root) return;
+    if (!root.querySelector("#ns-hide-mods")) {
+      const style = document.createElement("style");
+      style.id = "ns-hide-mods";
+      style.textContent = `
+        .modal, .modal-area, .modal.hidden, .message-overlay { display: none !important; }
+        .toast-container { max-width: 420px !important; }
+      `;
+      root.appendChild(style);
+    }
+    // Some builds render the warning outside .modal; hide any visible node
+    // containing the warning text.
+    root.querySelectorAll("div, span").forEach((el) => {
+      if (el.childElementCount === 0 && /hardware acceleration/i.test(el.textContent || "")) {
+        let p = el;
+        for (let i = 0; i < 4 && p && p !== root; i++) p = p.parentElement;
+        if (p) p.style.display = "none";
+      }
+    });
+  }
+
+  function showError(err) {
+    errorBox.classList.add("show");
+    errorText.textContent = "El reproductor Flash encontró un problema.";
+    errorDetail.textContent = String(err && err.message ? err.message : err);
+    loading.classList.add("hidden");
+  }
+
+  async function start() {
+    if (loaded) return;
+    loaded = true;
+    playBtn.disabled = true;
+    cover.classList.add("hidden");
+    loading.classList.remove("hidden");
+    loadStatus.textContent = "Preparando el reproductor Flash…";
+
+    setTimeout(() => {
+      if (!loading.classList.contains("hidden")) {
+        loadStatus.textContent = "Cargando el cliente de Ninja Saga (9 MB)…";
+      }
+    }, 4000);
+
+    try {
+      const ruffle = window.RufflePlayer.newest();
+      player = ruffle.createPlayer();
+      player.style.width = "100%";
+      player.style.height = "100%";
+      player.id = "ruffle";
+      stage.appendChild(player);
+
+      suppressRuffleWarnings();
+      if (player.shadowRoot) {
+        const obs = new MutationObserver(() => suppressRuffleWarnings());
+        obs.observe(player.shadowRoot, { childList: true, subtree: true });
+      }
+      setInterval(suppressRuffleWarnings, 1500);
+
+      await player.ruffle().load({
+        url: "/client/NinjaSage.swf",
+        autoplay: true,
+        allowScriptAccess: true,
+        scale: "showAll",
+        quality: "high",
+        base: null,
+        salign: "tl",
+        preferredRenderer: renderer || null
+      });
+      loading.classList.add("hidden");
+      suppressRuffleWarnings();
+      toast("Listo. Inicia sesión para entrar a la aldea.");
+    } catch (err) {
+      console.error(err);
+      showError(err);
+    }
+  }
+
+  playBtn.addEventListener("click", start);
+
+  document.getElementById("reloadBtn").addEventListener("click", () => location.reload());
+  document.getElementById("fsBtn").addEventListener("click", async () => {
+    try {
+      if (document.fullscreenElement) await document.exitFullscreen();
+      else await document.documentElement.requestFullscreen();
+    } catch (e) { toast("El navegador bloqueó la pantalla completa"); }
+  });
+
+  // F11 works too (handled by Chrome); Esc exits fullscreen.
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "F11") {
+      e.preventDefault();
+      document.getElementById("fsBtn").click();
+    }
+  });
+
+  // If opened with ?autostart=1 (used by the launcher), go straight in.
+  if (params.get("autostart") === "1") {
+    setTimeout(start, 250);
+  }
+})();
+</script>
+</body>
+</html>

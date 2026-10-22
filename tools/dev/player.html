@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Ninja Saga — Player</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  html, body { margin: 0; height: 100%; background: #07080d; overflow: hidden; }
+  #wrap { position: fixed; inset: 0; display: flex; align-items: center; justify-content: center; }
+  #wrap ruffle-player { width: 100%; height: 100%; }
+  #hud {
+    position: fixed; left: 12px; bottom: 12px; z-index: 10;
+    font: 12px/1.4 ui-monospace, Menlo, monospace; color: #8ea0b5;
+    background: rgba(8,12,18,.78); border: 1px solid #243040; border-radius: 8px;
+    padding: 8px 10px; max-width: min(640px, 80vw);
+  }
+  #hud a { color: #6fd3c7; }
+  #hud.hidden { display: none; }
+  #log { color: #ffb786; white-space: pre-wrap; max-height: 110px; overflow: auto; }
+</style>
+</head>
+<body>
+<div id="wrap"></div>
+<div id="hud">
+  <div><b id="title">…</b> · <a href="./">volver al arcade</a></div>
+  <div id="log"></div>
+</div>
+
+<script src="/tools/ruffle-web/ruffle.js"></script>
+<script>
+(() => {
+  const params = new URLSearchParams(location.search);
+  const swf = params.get("swf") || "";
+  const width = parseInt(params.get("w") || "960", 10);
+  const height = parseInt(params.get("h") || "640", 10);
+  const scale = params.get("scale") || "showAll";
+
+  document.title = "Ninja Saga — " + (swf.split("/").pop() || "player");
+  document.getElementById("title").textContent = swf.split("/").pop() || "player";
+
+  window.RufflePlayer = window.RufflePlayer || {};
+  window.RufflePlayer.config = {
+    autoplay: "on",
+    unmuteOverlay: "hidden",
+    splashScreen: false,
+    letterbox: "on",
+    scale: scale,
+    quality: "high",
+    warnOnUnsupportedContent: false,
+    logLevel: "info",
+    contextMenu: "on",
+    allowScriptAccess: true,
+    salign: "tl",
+    base: null,
+    openUrlMode: "allow",
+    favorFlash: true,
+    preferredRenderer: params.get("renderer") || null,
+    playerRuntime: params.get("runtime") || "flashPlayer",
+    fontSources: [
+      "/fonts/Verdana-Regular.ttf",
+      "/fonts/Verdana-Bold.ttf",
+      "/fonts/VerdanaBold-Regular.ttf",
+      "/fonts/FranklinGothicDemi.ttf",
+      "/fonts/NotoSans-Regular.ttf",
+      "/fonts/NotoSans-Bold.ttf"
+    ],
+    defaultFonts: {
+      sans: "Verdana",
+      serif: "Verdana",
+      typewriter: "Verdana"
+    }
+  };
+
+  const log = (msg) => {
+    const el = document.getElementById("log");
+    el.textContent += msg + "\n";
+    console.log("[player]", msg);
+  };
+
+  function start() {
+    if (!swf) { log("No swf parameter"); return; }
+    if (!window.RufflePlayer || !window.RufflePlayer.newest) {
+      log("Ruffle not available (needs HTTP server, not file://)");
+      return;
+    }
+    const ruffle = window.RufflePlayer.newest();
+    const player = ruffle.createPlayer();
+    player.style.width = "100%";
+    player.style.height = "100%";
+    player.id = "ruffle";
+    document.getElementById("wrap").appendChild(player);
+
+    const url = "/" + swf.replace(/^\/+/, "");
+    log("loading " + url);
+    player.ruffle().load({
+      url,
+      autoplay: true,
+      allowScriptAccess: true,
+      scale: "showAll",
+      quality: "high",
+      base: null,
+      salign: "tl"
+    }).then(() => log("loaded"))
+      .catch(e => log("ERROR " + e));
+  }
+
+  // Forward Ruffle's own console diagnostics into the HUD
+  const origLog = console.log, origWarn = console.warn, origErr = console.error;
+  console.log = (...a) => { try { if (String(a[0]).startsWith("[ruffle")) { log(a.map(String).join(" ")); } } catch (e) {} origLog(...a); };
+  console.warn = (...a) => { log("WARN " + a.map(String).join(" ")); origWarn(...a); };
+  console.error = (...a) => { log("ERR " + a.map(String).join(" ")); origErr(...a); };
+
+  start();
+})();
+</script>
+</body>
+</html>
