@@ -75,7 +75,7 @@ try {
 
   Write-Host ""
   Write-Host "  Listo: https://$script:GameHost/play" -ForegroundColor Green
-  Write-Host "  Cuenta de prueba:  macninja / ninja1234" -ForegroundColor White
+  Write-Host "  Cuenta premium:   macninja / ninja1234" -ForegroundColor White
   Write-Host "  Panel admin:       https://$script:GameHost/admin  (admin@admin.test / admin)" -ForegroundColor DarkGray
   Write-Host "  Detener servicios:  stop.bat" -ForegroundColor DarkGray
   Write-Host ""

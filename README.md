@@ -23,9 +23,11 @@ descarga todo automáticamente con un doble clic.
    - Prepara la base de datos y los datos del juego.
    - Abre el juego al terminar.
    - Si Windows SmartScreen avisa, pulsa **Más información → Ejecutar de todas formas**.
-4. Inicia sesión con la cuenta de prueba:
+4. Inicia sesión con la cuenta de prueba **Premium**:
    - **Usuario:** `macninja`
    - **Contraseña:** `ninja1234`
+   - Incluye **1.000.000 de tokens** y todos los beneficios Premium (más espacios de
+     personaje, emblemas, compras y tiradas extra).
 5. Elige o crea tu personaje. Si acabas de crear uno, el cliente puede volver al login:
    vuelve a entrar y aparecerá en la lista (es el comportamiento normal).
 
@@ -57,11 +59,16 @@ Para instalar desde cero en otro Mac, consulta
 
 | Cuenta | Usuario | Contraseña | Uso |
 |---|---|---|---|
-| Jugador de prueba | `macninja` | `ninja1234` | Entrar al juego |
+| Jugador de prueba (Premium) | `macninja` | `ninja1234` | Entrar al juego; 1.000.000 de tokens |
 | Administrador | `admin@admin.test` | `admin` | Panel `/admin` |
 
 También puedes crear una cuenta nueva con **Register** en la pantalla de login.
 Las cuentas y los personajes se guardan en `runtime/mysql`; no se suben a Git.
+
+> `macninja` se crea como cuenta **Premium** (`account_type = 1`) con 1.000.000 de
+> tokens. Si ya tenías una instalación anterior, vuelve a ejecutar `setup.bat`: la
+> migración `2026_10_22_000001_upgrade_demo_account_to_premium` actualiza la cuenta sin
+> cambiar la contraseña ni los personajes.
 
 **Panel de administración:** `https://ninjasage.test/admin` en la misma ventana de Chrome
 que abre el lanzador. Permite editar objetos, skills, eventos, economía, etc.

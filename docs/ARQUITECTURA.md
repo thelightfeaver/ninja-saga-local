@@ -177,7 +177,10 @@ ahora funciona igual en Windows sin privilegios.
 `DatabaseSeeder` ejecuta, en orden:
 
 1. `AdminUserSeeder` → `admin@admin.test` / `admin`.
-2. `DemoUserSeeder` → `macninja` / `ninja1234` (idempotente; no pisa usuarios existentes).
+2. `DemoUserSeeder` → `macninja` / `ninja1234`, cuenta Premium (`account_type = 1`)
+   con 1.000.000 de tokens (idempotente; no pisa usuarios existentes).
+   La migración `2026_10_22_000001_upgrade_demo_account_to_premium` actualiza las
+   instalaciones creadas con v1.0.0.
 3. `EudemonGardenSeeder`.
 4. `GameDataSeeder` → items, skills, pets, misiones, NPCs, enemigos, talentos, senjutsu,
    configuración.

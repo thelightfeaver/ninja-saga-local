@@ -95,6 +95,14 @@ jobs:
           if ([int]$parts[2] -lt 300) { throw "Enemies table is incomplete" }
           if ([int]$parts[3] -lt 2) { throw "Demo/admin users are missing" }
 
+          $demo = (& $db --host=127.0.0.1 --port=3307 --user=root --database=ninjasage `
+            --skip-column-names --batch `
+            --execute="SELECT account_type, tokens FROM users WHERE username='macninja';").Trim()
+          Write-Host "demo=$demo"
+          $demoParts = $demo -split "\s+"
+          if ([int]$demoParts[0] -ne 1) { throw "Demo account is not Premium" }
+          if ([int]$demoParts[1] -lt 1000000) { throw "Demo account has too few tokens" }
+
       - name: Upload logs
         if: always()
         uses: actions/upload-artifact@v4

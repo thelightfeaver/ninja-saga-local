@@ -3,6 +3,25 @@
 Todas las versiones notables de este montaje. El proyecto sigue un esquema simple
 `MAJOR.MINOR.PATCH`.
 
+## v1.0.1 — 2026-10-22
+
+Versión pensada para que la cuenta de prueba venga lista para jugar sin limitaciones.
+
+### Añadido
+
+- Cuenta de prueba **Premium**: `macninja` / `ninja1234` se crea con
+  `account_type = 1` y **1.000.000 de tokens**.
+- Migración `2026_10_22_000001_upgrade_demo_account_to_premium`: actualiza la cuenta
+  `macninja` de una instalación v1.0.0 sin cambiar su contraseña ni sus personajes.
+- El smoke test de Windows comprueba el tipo de cuenta y los tokens del jugador de
+  prueba, además de los recuentos de items, skills, enemigos y usuarios.
+
+### Cambiado
+
+- `README.md`, `README.en.md`, `docs/WINDOWS.md` y `docs/ARQUITECTURA.md` documentan la
+  cuenta Premium y sus credenciales.
+- Los mensajes de `setup.bat` y `launch.bat` muestran «Cuenta premium».
+
 ## v1.0.0 — 2026-10-22
 
 Primera versión publicada como paquete autónomo para Windows y macOS.

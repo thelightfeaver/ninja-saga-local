@@ -550,7 +550,7 @@ def main() -> None:
     start_edge()
     say("")
     say(f"  Listo: https://{HOST}/play")
-    say("  Cuenta de prueba:  macninja / ninja1234")
+    say("  Cuenta premium:    macninja / ninja1234")
     say(f"  Panel admin:        https://{HOST}/admin  (admin@admin.test / admin)")
     say("  Detener servicios:  " + ("stop.bat" if IS_WINDOWS else "./stop.command"))
     say("")

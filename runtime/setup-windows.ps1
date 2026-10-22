@@ -342,7 +342,7 @@ function Initialize-Database {
 function Show-Summary {
   Write-Head "Instalación completada"
   Write-Host "  Para jugar, abre:  launch.bat" -ForegroundColor White
-  Write-Host "  Cuenta de prueba:  macninja / ninja1234" -ForegroundColor White
+  Write-Host "  Cuenta premium:   macninja / ninja1234" -ForegroundColor White
   Write-Host "  Panel admin:       https://ninjasage.test/admin  (admin@admin.test / admin)" -ForegroundColor White
   Write-Host "  Detener:           stop.bat" -ForegroundColor White
   Write-Host ""

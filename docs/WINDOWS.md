@@ -62,11 +62,17 @@ portables dentro de `runtime\bin\`. No se crean servicios de Windows ni entradas
 **Tiempo estimado:** 5–15 minutos, según la conexión y el disco. La carga de datos del
 juego (5.564 items, 1.162 skills, 371 enemigos, 89 misiones) es la parte más lenta.
 
-### Cuenta de prueba
+### Cuenta de prueba Premium
 
 | Usuario | Contraseña |
 |---|---|
 | `macninja` | `ninja1234` |
+
+La cuenta se crea como **Premium** (`account_type = 1`) y empieza con **1.000.000 de
+tokens**, suficientes para probar la tienda, los emblemas y las funciones Premium sin
+farmear. Si vienes de una instalación anterior, vuelve a ejecutar `setup.bat`: la
+migración `2026_10_22_000001_upgrade_demo_account_to_premium` la actualiza sin tocar la
+contraseña ni los personajes.
 
 Si es la primera vez, entra y crea tu personaje. Si después de crearlo el cliente vuelve
 al login, vuelve a entrar: el personaje ya estará guardado.

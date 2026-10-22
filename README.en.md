@@ -19,9 +19,11 @@ installation. Windows 10/11 x64 and macOS are supported.
    - It creates and seeds the local database.
    - It opens the game when finished.
    - If SmartScreen appears: **More info → Run anyway**.
-4. Log in:
+4. Log in with the **Premium** demo account:
    - **Username:** `macninja`
    - **Password:** `ninja1234`
+   - It starts with **1,000,000 tokens** and every Premium benefit (extra character
+     slots, emblems, premium shop prices, extra roulette spins).
 5. Create a character. If the client returns to the login screen after creation, log in
    again; the character is saved.
 
@@ -75,11 +77,16 @@ For a from-scratch macOS install, see the Spanish guide:
 
 | Account | Username | Password |
 |---|---|---|
-| Player | `macninja` | `ninja1234` |
+| Player (Premium, 1,000,000 tokens) | `macninja` | `ninja1234` |
 | Admin | `admin@admin.test` | `admin` |
 
 Admin panel: `https://ninjasage.test/admin` (use the Chrome window opened by the
 launcher). You can also create a new account with **Register** in the game.
+
+`macninja` is seeded as a Premium account (`account_type = 1`) with 1,000,000 tokens.
+On an older installation, run `setup.bat` again to apply
+`2026_10_22_000001_upgrade_demo_account_to_premium`; your password and characters are
+kept.
 
 ---
 
