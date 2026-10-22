@@ -54,7 +54,7 @@ jobs:
             Format-Table Id, ProcessName, StartTime
           netstat -ano | Select-String ":8000|:3307|:8443"
 
-      - name: Launch again (idempotent)
+      - name: Start services with launch.bat
         shell: cmd
         run: |
           launch.bat --NoBrowser
@@ -63,6 +63,10 @@ jobs:
             type runtime\logs\laravel-console.err.log
             exit /b 1
           )
+
+      - name: Launch again (idempotent)
+        shell: cmd
+        run: launch.bat --NoBrowser
 
       - name: Verify game endpoints
         shell: pwsh

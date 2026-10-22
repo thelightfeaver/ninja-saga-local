@@ -4,10 +4,11 @@ Esta guía cubre la instalación, el uso diario y la solución de problemas en *
 10/11 de 64 bits**. La idea es que tu amigo solo tenga que descomprimir la carpeta y
 hacer doble clic en `setup.bat`.
 
-> **Nota honesta:** el flujo de Windows se diseñó y validó sintácticamente, pero este
-> proyecto se preparó en un Mac. No fue posible ejecutar `mariadbd.exe`, `php.exe` ni los
-> `.bat` en Windows real. Si algo falla, el log de `runtime\logs\setup.log` indica el paso
-> exacto y se puede corregir sin tocar el resto.
+> **Validación:** además de las pruebas en macOS, el flujo completo de Windows se ejecuta
+> en GitHub Actions sobre `windows-latest` con los binarios reales: instalación desde
+> cero, `setup.bat`, `launch.bat`, endpoints HTTPS y recuentos de la base de datos. No
+> sustituye a un PC físico, pero detecta errores de rutas, permisos y arranque. Si algo
+> falla en tu equipo, `runtime\logs\setup.log` indica el paso exacto.
 
 ---
 

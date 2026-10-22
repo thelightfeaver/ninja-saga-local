@@ -47,6 +47,9 @@ Primera versión publicada como paquete autónomo para Windows y macOS.
 - Se eliminaron las carpetas duplicadas `Items/` y `Skills/` del servidor Laravel; los
   assets viven en `ns-server/Custom Client/NS Custom Client V1/` y se enlazan en
   `public/`.
+- El servidor PHP de Windows se arranca directamente (`php -S`) en lugar de
+  `artisan serve`, porque Laravel activa `PHP_CLI_SERVER_WORKERS`, que la build oficial
+  de PHP para Windows no soporta.
 
 ### Corregido
 
@@ -58,6 +61,8 @@ Primera versión publicada como paquete autónomo para Windows y macOS.
 - CORS para los endpoints de `ninjasage.id` / `ns-assets.ninjasage.id`.
 - Imágenes de eventos del CDN muerto sustituidas por placeholders locales.
 - `game_events.image_url` en migraciones.
+- Se corrigió `launch.bat` en un proceso nuevo (faltaba `Ensure-Directories` fuera del
+  instalador) y `stop.bat` ya no falla por el aviso de MariaDB sin contraseña.
 
 ### Conocido / limitado
 
@@ -65,8 +70,9 @@ Primera versión publicada como paquete autónomo para Windows y macOS.
   No afecta al juego.
 - PvP, chat y clanes no se probaron a fondo.
 - Ruffle no reproduce Flash exactamente; puede haber diferencias visuales o sonoras.
-- Los scripts de Windows se validaron sintácticamente y el flujo se probó en macOS, pero
-  no se ejecutaron los binarios de Windows en una máquina Windows real.
+- El flujo de Windows se prueba automáticamente en GitHub Actions (`windows-latest`):
+  instalación desde cero, arranque, endpoints HTTPS y datos sembrados. No se probó en un
+  PC físico.
 - No se incluye el volcado original `repo/` (118 MB) ni FFDec.
 
 ## Base

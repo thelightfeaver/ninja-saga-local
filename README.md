@@ -292,9 +292,11 @@ estaba preparado para macOS/Windows. Los cambios principales:
   por placeholders locales.
 - PvP, chat y clanes del servidor privado no se probaron a fondo.
 - Ruffle no es Flash Player exacto: puede haber diferencias visuales o sonoras.
-- **Windows:** los scripts se validaron sintácticamente y el flujo se probó en macOS con
-  las mismas rutas lógicas, pero no fue posible ejecutar los binarios de Windows en este
-  Mac. Si algo falla, los logs indican exactamente qué paso lo hizo.
+- **Windows:** el flujo completo (`setup.bat`, `launch.bat`, HTTPS y base de datos) se
+  ejecuta automáticamente en GitHub Actions sobre `windows-latest` con los binarios
+  reales. No se probó en un PC físico, pero el
+  [smoke test](.github/workflows/windows-smoke.yml) cubre la instalación desde cero.
+  Si algo falla en tu equipo, los logs indican exactamente qué paso lo hizo.
 
 ---
 

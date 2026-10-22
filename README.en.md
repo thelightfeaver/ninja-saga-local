@@ -31,6 +31,9 @@ Stop the server: double-click **`stop.bat`**.
 The first install takes 5–15 minutes. The first game load takes 15–25 seconds because
 Ruffle downloads the 9 MB client and the WASM engine.
 
+The Windows flow is also exercised from scratch on GitHub Actions
+(`windows-latest`): setup, launch, HTTPS endpoints and database counts.
+
 ### Requirements
 
 - Windows 10 or 11, 64-bit.
