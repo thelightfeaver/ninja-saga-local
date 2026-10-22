@@ -463,10 +463,17 @@ function Start-LocalLaravel {
   if (-not (Test-Path -LiteralPath $script:LogsDir)) {
     New-Item -ItemType Directory -Force -Path $script:LogsDir | Out-Null
   }
-  $argLine = "artisan serve --host=127.0.0.1 --port=$script:LaravelPort"
+  # Start PHP's built-in server directly instead of `artisan serve`.  Laravel's
+  # ServeCommand sets PHP_CLI_SERVER_WORKERS, which the Windows PHP build does
+  # not support; on some Windows machines it then fails with
+  # "Failed to listen on 127.0.0.1:8000 (reason: ?)" even though the port is
+  # free.  The direct command is the same server without that environment
+  # variable and works on Windows 10/11.
+  $router = Join-Path $script:LaravelDir "vendor\laravel\framework\src\Illuminate\Foundation\resources\server.php"
+  $argLine = "-S 127.0.0.1:$script:LaravelPort `"$router`""
   $stdout = Join-Path $script:LogsDir "laravel-console.log"
   $stderr = Join-Path $script:LogsDir "laravel-console.err.log"
-  $p = Start-BackgroundProcess -FilePath $php -Arguments $argLine -WorkingDirectory $script:LaravelDir -StdOut $stdout -StdErr $stderr
+  $p = Start-BackgroundProcess -FilePath $php -Arguments $argLine -WorkingDirectory $script:PublicDir -StdOut $stdout -StdErr $stderr
   Write-PidFile -Name "laravel" -ProcessId $p.Id
   if (-not (Wait-Port -Port $script:LaravelPort -Seconds 30 -Process $p)) {
     throw "Laravel no arrancó. Revisa runtime\logs\laravel-console.log"
