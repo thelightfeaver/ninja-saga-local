@@ -9,6 +9,7 @@ $script:ClientDir = Join-Path $script:Root "ns-server\Custom Client\NS Custom Cl
 $script:LogsDir = Join-Path $script:RuntimeDir "logs"
 $script:PidsDir = Join-Path $script:RuntimeDir "pids"
 $script:BinDir = Join-Path $script:RuntimeDir "bin"
+$script:DownloadDir = Join-Path $script:RuntimeDir "downloads"
 
 $script:MariaDbPort = 3307
 $script:LaravelPort = 8000
@@ -31,6 +32,30 @@ function Write-Step { param([string]$Text) Write-Host "  -> $Text" -ForegroundCo
 function Write-Ok   { param([string]$Text) Write-Host "  OK  $Text" -ForegroundColor Green }
 function Write-Warn { param([string]$Text) Write-Host "  !!  $Text" -ForegroundColor Yellow }
 function Write-Err  { param([string]$Text) Write-Host "  XX  $Text" -ForegroundColor Red }
+
+function Ensure-Directories {
+  foreach ($d in @($script:LogsDir, $script:PidsDir, $script:DownloadDir, $script:BinDir, (Join-Path $script:RuntimeDir "chrome-profile"))) {
+    if (-not (Test-Path -LiteralPath $d)) {
+      New-Item -ItemType Directory -Force -Path $d | Out-Null
+    }
+  }
+}
+
+# Runs a native tool while ignoring its stderr.  Windows PowerShell 5.1 turns
+# native stderr into error records, and with $ErrorActionPreference = "Stop"
+# that aborts the script.  MariaDB's client prints a harmless passwordless
+# login warning on shutdown, so we must not let it kill stop.bat.
+function Invoke-NativeQuiet {
+  param([string]$FilePath, [string[]]$Arguments)
+  $old = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    & $FilePath @Arguments 2>&1 | Out-Null
+    return $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $old
+  }
+}
 
 function Test-Port {
   param([int]$Port, [string]$HostName = "127.0.0.1", [int]$TimeoutMs = 350)
@@ -86,8 +111,15 @@ function Test-EdgeHttps {
   param([int]$Port = $script:EdgePort, [int]$TimeoutSeconds = 5)
   $curl = Get-Command curl.exe -ErrorAction SilentlyContinue
   if (-not $curl) { return $true }  # no curl: the open port is our best signal
-  $code = & $curl.Source --silent --show-error --insecure --output NUL --write-out "%{http_code}" --max-time $TimeoutSeconds "https://127.0.0.1:$Port/amf" 2>$null
-  if ($LASTEXITCODE -ne 0) { return $false }
+  $old = $ErrorActionPreference
+  $ErrorActionPreference = "Continue"
+  try {
+    $code = & $curl.Source --silent --show-error --insecure --output NUL --write-out "%{http_code}" --max-time $TimeoutSeconds "https://127.0.0.1:$Port/amf" 2>$null
+    $exit = $LASTEXITCODE
+  } finally {
+    $ErrorActionPreference = $old
+  }
+  if ($exit -ne 0) { return $false }
   return ("$code" -match '^[1-5][0-9][0-9]$')
 }
 
@@ -353,7 +385,7 @@ function Test-ProcessAlive {
 function Stop-ProcessTree {
   param([int]$ProcessId)
   if (-not $ProcessId) { return }
-  & taskkill.exe /PID $ProcessId /T /F 2>&1 | Out-Null
+  [void](Invoke-NativeQuiet -FilePath "taskkill.exe" -Arguments @("/PID", "$ProcessId", "/T", "/F"))
 }
 
 function Start-BackgroundProcess {
@@ -380,8 +412,10 @@ function Start-LocalMariaDb {
   }
   if (Test-Port -Port $script:MariaDbPort) {
     if ($db.Admin) {
-      & $db.Admin --host=127.0.0.1 --port=$script:MariaDbPort -uroot ping 2>&1 | Out-Null
-      if ($LASTEXITCODE -ne 0) {
+      $ping = Invoke-NativeQuiet -FilePath $db.Admin -Arguments @(
+        "--host=127.0.0.1", "--port=$script:MariaDbPort", "-uroot", "ping"
+      )
+      if ($ping -ne 0) {
         throw "El puerto $script:MariaDbPort está ocupado por otro programa. Ciérralo y vuelve a intentar."
       }
     }
@@ -520,7 +554,9 @@ function Stop-LocalServices {
   Write-Step "Deteniendo servicios locales..."
   $db = Get-MariaDbTools
   if ($db -and $db.Admin -and (Test-Port -Port $script:MariaDbPort)) {
-    & $db.Admin --host=127.0.0.1 --port=$script:MariaDbPort -uroot shutdown 2>&1 | Out-Null
+    [void](Invoke-NativeQuiet -FilePath $db.Admin -Arguments @(
+      "--host=127.0.0.1", "--port=$script:MariaDbPort", "-uroot", "shutdown"
+    ))
   }
   foreach ($name in @("edge", "laravel", "mariadb")) {
     $pidValue = Read-PidFile -Name $name

@@ -10,7 +10,6 @@ $ErrorActionPreference = "Stop"
 . "$PSScriptRoot\windows-common.ps1"
 
 $script:PhpExe = $null
-$script:DownloadDir = Join-Path $script:RuntimeDir "downloads"
 $script:SetupMarker = Join-Path $script:RuntimeDir ".setup-complete"
 $script:PhpVersion = "8.4"
 $script:MariaDbVersion = "11.4.8"
@@ -22,12 +21,6 @@ function Assert-Adminless {
   }
   if ([Environment]::OSVersion.Version.Major -lt 10) {
     Write-Warn "Windows anterior a 10 no está probado. Puede funcionar, pero no está soportado."
-  }
-}
-
-function Ensure-Directories {
-  foreach ($d in @($script:LogsDir, $script:PidsDir, $script:DownloadDir, $script:BinDir, (Join-Path $script:RuntimeDir "chrome-profile"))) {
-    if (-not (Test-Path -LiteralPath $d)) { New-Item -ItemType Directory -Force -Path $d | Out-Null }
   }
 }
 
@@ -232,8 +225,14 @@ function Invoke-Php {
   param([string[]]$PhpArgs, [switch]$AllowFailure)
   Push-Location $script:LaravelDir
   try {
-    $output = & $script:PhpExe @PhpArgs 2>&1
-    $code = $LASTEXITCODE
+    $old = $ErrorActionPreference
+    $ErrorActionPreference = "Continue"
+    try {
+      $output = & $script:PhpExe @PhpArgs 2>&1
+      $code = $LASTEXITCODE
+    } finally {
+      $ErrorActionPreference = $old
+    }
     foreach ($line in @($output)) { Write-Host "    $line" }
   } finally {
     Pop-Location
