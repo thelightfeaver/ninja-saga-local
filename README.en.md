@@ -10,7 +10,8 @@ installation. Windows 10/11 x64 and macOS are supported.
 
 ## Windows (one-click)
 
-1. Download the repository (**Code → Download ZIP**) or clone it.
+1. Download the latest **[Release](../../releases/latest)** (recommended) or the
+   repository (**Code → Download ZIP**), or clone it.
 2. Extract it to a short path such as `C:\NinjaSaga` (avoid OneDrive and
    `C:\Program Files`).
 3. Double-click **`setup.bat`** once.

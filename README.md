@@ -15,7 +15,8 @@ descarga todo automáticamente con un doble clic.
 
 ### Windows (recomendado para tu amigo)
 
-1. Descarga el proyecto (botón **Code → Download ZIP** en GitHub) o clónalo con Git.
+1. Descarga la última versión desde **[Releases](../../releases/latest)** (recomendado) o
+   usa **Code → Download ZIP** en GitHub.
 2. Descomprímelo en una ruta corta y sin OneDrive, por ejemplo **`C:\NinjaSaga`**.
 3. Doble clic en **`setup.bat`**. Es solo la primera vez.
    - Descarga PHP, MariaDB y Node.js portables (~160 MB).

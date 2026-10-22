@@ -38,6 +38,7 @@ portables dentro de `runtime\bin\`. No se crean servicios de Windows ni entradas
 ## 2. Instalación (primera vez)
 
 1. Descarga el repositorio:
+   - **Releases → última versión → ZIP** (recomendado), o
    - **GitHub → Code → Download ZIP**, o
    - `git clone https://github.com/thelightfeaver/ninja-saga-local.git`
 2. Descomprime el ZIP. Debe quedar una carpeta con `setup.bat`, `launch.bat`,
